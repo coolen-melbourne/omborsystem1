@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fadeInUp {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-up {
+            animation: fadeInUp 0.7s ease-out forwards;
+        }
+        .product-card:nth-child(1) { animation-delay: 0.1s; }
+        .product-card:nth-child(2) { animation-delay: 0.3s; }
+        .product-card:nth-child(3) { animation-delay: 0.5s; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans antialiased">
+
+    <!-- Navbar -->
+    <header class="border-b border-gray-200 bg-white/70 backdrop-blur-sm sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-5 py-4 flex items-center justify-between">
+            <a href="/" class="text-2xl font-light tracking-wide">minimal.</a>
+            <div class="flex items-center gap-4">
+                {{#if user}}
+                    <span class="text-sm text-gray-600">{{user.username}}</span>
+                    <a href="/dashboard" class="text-sm bg-gray-200 px-3 py-1 rounded-full hover:bg-gray-300 transition">Dashboard</a>
+                    <a href="/logout" class="text-sm bg-gray-200 px-3 py-1 rounded-full hover:bg-gray-300 transition">Chiqish</a>
+                {{else}}
+                    <a href="/login" class="text-sm bg-gray-900 text-white px-4 py-2 rounded-full hover:bg-gray-700 transition">Kirish</a>
+                {{/if}}
+                <span class="text-xl cursor-pointer">🛒</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero bo‘limi (o‘zgarishsiz) -->
+    <section class="max-w-7xl mx-auto px-5 py-16 md:py-24 text-center">
+        <h1 class="text-4xl md:text-5xl font-light mb-4 animate-fade-up">Yangi kolleksiya</h1>
+        <p class="text-gray-500 max-w-xl mx-auto mb-8 text-lg animate-fade-up" style="animation-delay: 0.15s;">
+            Minimal dizayn, maksimal qulaylik. Chegirmalar bilan tanishing.
+        </p>
+        <button class="bg-gray-900 text-white px-8 py-3 rounded-full text-sm tracking-wide hover:bg-gray-700 transition-all duration-300 hover:shadow-lg hover:scale-105 animate-fade-up" style="animation-delay: 0.25s;">
+            Barcha mahsulotlar
+        </button>
+    </section>
+
+    <!-- Mahsulotlar gridi (avvalgidek) -->
+    <section class="max-w-7xl mx-auto px-5 pb-20">
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8">
+
+
+
+<div class="product-card bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden opacity-0 animate-fade-up">
+    <!-- Rasm konteyneri: mobil balandligi 128px, desktop 256px -->
+    <div class="w-full h-32 md:h-64 bg-gray-100 flex items-center justify-center">
+        <img src="/images/xalat.JPG" alt="Mahsulot rasmi" 
+             class="w-full h-full object-contain hover:scale-105 transition-transform duration-500">
+    </div>
+    <!-- Matn qismi -->
+    <div class="p-2 md:p-5">
+        <h3 class="font-medium text-sm md:text-lg mb-1">Somon sumka</h3>
+        <p class="text-gray-500 text-xs md:text-sm mb-2">Tabiiy material, qo‘l ishi</p>
+        <div class="flex items-center justify-between">
+            <span class="text-base md:text-xl font-light">$59</span>
+            <button class="border border-gray-300 px-2 py-1 md:px-4 md:py-2 rounded-full text-xs md:text-sm hover:bg-gray-900 hover:text-white transition-all duration-300">
+                Sotib olish
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="product-card bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden opacity-0 animate-fade-up">
+    <!-- Rasm konteyneri: mobil balandligi 128px, desktop 256px -->
+    <div class="w-full h-32 md:h-64 bg-gray-100 flex items-center justify-center">
+        <img src="/images/xalat.JPG" alt="Mahsulot rasmi" 
+             class="w-full h-full object-contain hover:scale-105 transition-transform duration-500">
+    </div>
+    <!-- Matn qismi -->
+    <div class="p-2 md:p-5">
+        <h3 class="font-medium text-sm md:text-lg mb-1">Somon sumka</h3>
+        <p class="text-gray-500 text-xs md:text-sm mb-2">Tabiiy material, qo‘l ishi</p>
+        <div class="flex items-center justify-between">
+            <span class="text-base md:text-xl font-light">$59</span>
+            <button class="border border-gray-300 px-2 py-1 md:px-4 md:py-2 rounded-full text-xs md:text-sm hover:bg-gray-900 hover:text-white transition-all duration-300">
+                Sotib olish
+            </button>
+        </div>
+    </div>
+</div>
+<div class="product-card bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden opacity-0 animate-fade-up">
+    <!-- Rasm konteyneri: mobil balandligi 128px, desktop 256px -->
+    <div class="w-full h-32 md:h-64 bg-gray-100 flex items-center justify-center">
+        <img src="/images/xalat.JPG" alt="Mahsulot rasmi" 
+             class="w-full h-full object-contain hover:scale-105 transition-transform duration-500">
+    </div>
+    <!-- Matn qismi -->
+    <div class="p-2 md:p-5">
+        <h3 class="font-medium text-sm md:text-lg mb-1">Somon sumka</h3>
+        <p class="text-gray-500 text-xs md:text-sm mb-2">Tabiiy material, qo‘l ishi</p>
+        <div class="flex items-center justify-between">
+            <span class="text-base md:text-xl font-light">$59</span>
+            <button class="border border-gray-300 px-2 py-1 md:px-4 md:py-2 rounded-full text-xs md:text-sm hover:bg-gray-900 hover:text-white transition-all duration-300">
+                Sotib olish
+            </button>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-200 py-8 text-center text-gray-400 text-sm">
+        <div class="max-w-7xl mx-auto px-5">
+            © 2025 minimal. Barcha huquqlar himoyalangan.
+        </div>
+    </footer>
+
+    <!-- Tugmalar interaktivligi (ixtiyoriy) -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const buyButtons = document.querySelectorAll('.product-card button');
+            buyButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const productName = this.closest('.product-card').querySelector('h3').innerText;
+                    alert(`"${productName}" savatga qo'shildi!`);
+                });
+            });
+            const allProductsBtn = document.querySelector('section.text-center button');
+            if (allProductsBtn) {
+                allProductsBtn.addEventListener('click', function() {
+                    alert('Barcha mahsulotlar sahifasiga o\'tilmoqda...');
+                });
+            }
+            const cartIcon = document.querySelector('header .flex .text-xl');
+            if (cartIcon) {
+                cartIcon.addEventListener('click', function() {
+                    alert('Savatcha hozircha bo‘sh. Mahsulot qo‘shing!');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

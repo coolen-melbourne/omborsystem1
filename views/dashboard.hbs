@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 font-sans antialiased">
+
+    <!-- Navbar -->
+    <header class="border-b border-gray-200 bg-white/70 backdrop-blur-sm sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-5 py-4 flex items-center justify-between">
+            <a href="/" class="text-2xl font-light tracking-wide">minimal.</a>
+            <div class="flex items-center gap-4">
+                <span class="text-sm text-gray-600">{{user.username}}</span>
+                <a href="/" class="text-sm bg-gray-200 px-3 py-1 rounded-full hover:bg-gray-300 transition">Marketpleys</a>
+                <a href="/logout" class="text-sm bg-gray-200 px-3 py-1 rounded-full hover:bg-gray-300 transition">Chiqish</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-5 py-10">
+        <h1 class="text-3xl font-light mb-8">Dashboard</h1>
+
+        <!-- Summa kartochkalari -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <div class="bg-white rounded-2xl shadow-sm p-6 border-l-4 border-green-500">
+                <p class="text-sm text-gray-500 uppercase">Kirim</p>
+                <p class="text-3xl font-light text-green-600">+ {{totalIncome}} so‘m</p>
+            </div>
+            <div class="bg-white rounded-2xl shadow-sm p-6 border-l-4 border-red-500">
+                <p class="text-sm text-gray-500 uppercase">Chiqim</p>
+                <p class="text-3xl font-light text-red-600">- {{totalExpense}} so‘m</p>
+            </div>
+            <div class="bg-white rounded-2xl shadow-sm p-6 border-l-4 border-blue-500">
+                <p class="text-sm text-gray-500 uppercase">Balans</p>
+                <p class="text-3xl font-light text-blue-600">{{balance}} so‘m</p>
+            </div>
+        </div>
+
+        <!-- Yangi tranzaksiya qo'shish formasi -->
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-10">
+            <h2 class="text-xl font-light mb-4">Yangi kirim/chiqim qo‘shish</h2>
+            <form action="/dashboard/add" method="POST" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <select name="type" required class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400">
+                    <option value="income">Kirim</option>
+                    <option value="expense">Chiqim</option>
+                </select>
+                <input type="text" name="description" placeholder="Tavsif (masalan: 'Krossovka sotildi')" required
+                       class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400">
+                <input type="number" name="amount" placeholder="Summa" required step="0.01" min="0"
+                       class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400">
+                <button type="submit" class="bg-gray-900 text-white px-6 py-2 rounded-lg hover:bg-gray-700 transition">
+                    Qo‘shish
+                </button>
+            </form>
+        </div>
+
+        <!-- Tranzaksiyalar ro'yxati -->
+        <div class="bg-white rounded-2xl shadow-sm p-6">
+            <h2 class="text-xl font-light mb-4">Oxirgi harakatlar</h2>
+            {{#if transactions.length}}
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="pb-2 font-medium">Turi</th>
+                                <th class="pb-2 font-medium">Tavsif</th>
+                                <th class="pb-2 font-medium">Summa</th>
+                                <th class="pb-2 font-medium">Sana</th>
+                                <th class="pb-2 font-medium"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#each transactions}}
+                            <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                <td class="py-3">
+                                    {{#if (eq this.type "income")}}
+                                        <span class="text-green-600">Kirim</span>
+                                    {{else}}
+                                        <span class="text-red-600">Chiqim</span>
+                                    {{/if}}
+                                </td>
+                                <td class="py-3">{{this.description}}</td>
+                                <td class="py-3">{{this.amount}} so‘m</td>
+                                <td class="py-3">{{this.date}}</td>
+                                <td class="py-3">
+                                    <form action="/dashboard/delete/{{this.id}}" method="POST" onsubmit="return confirm('O‘chirilsinmi?')">
+                                        <button type="submit" class="text-red-500 hover:text-red-700 text-sm">O‘chirish</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+            {{else}}
+                <p class="text-gray-500">Hozircha hech qanday harakat yo‘q.</p>
+            {{/if}}
+        </div>
+    </main>
+
+    <footer class="border-t border-gray-200 py-8 text-center text-gray-400 text-sm">
+        <div class="max-w-7xl mx-auto px-5">
+            © 2025 minimal. Barcha huquqlar himoyalangan.
+        </div>
+    </footer>
+</body>
+</html>
