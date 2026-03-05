@@ -1,0 +1,86 @@
+<!-- Install PWA banner -->
+<div id="install-banner" class="fixed bottom-20 left-4 right-4 md:bottom-8 md:left-auto md:right-8 md:w-96 bg-black/90 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-2xl z-50 hidden transform transition-all duration-300 translate-y-2 opacity-0">
+  <div class="flex items-start gap-4">
+    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xl">
+      <i class="fas fa-rocket"></i>
+    </div>
+    <div class="flex-1">
+      <h3 class="font-semibold text-white">MILANA PREMIUM o‘rnatilsinmi?</h3>
+      <p class="text-sm text-white/60 mt-1">Tezroq ishlash va offline rejim uchun ilovani o‘rnating.</p>
+      <div class="flex gap-3 mt-3">
+        <button id="install-btn" class="bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold py-2 px-5 rounded-full transition">
+          O‘rnatish
+        </button>
+        <button id="close-install-banner" class="bg-white/10 hover:bg-white/20 text-white text-sm font-semibold py-2 px-5 rounded-full transition">
+          Keyinroq
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Service Worker registratsiyasi va install logikasi -->
+<script>
+(function() {
+  // Service Worker registratsiyasi
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => console.log('✅ Service Worker ro‘yxatdan o‘tdi:', reg.scope))
+        .catch(err => console.error('❌ Service Worker xatosi:', err));
+    });
+  }
+
+  // PWA install logikasi
+  let deferredPrompt;
+  const installBanner = document.getElementById('install-banner');
+  const installBtn = document.getElementById('install-btn');
+  const closeBtn = document.getElementById('close-install-banner');
+
+  // Agar ilova allaqachon o‘rnatilgan bo‘lsa, banner ko‘rsatilmaydi
+  if (window.matchMedia('(display-mode: standalone)').matches) {
+    console.log('✅ Ilova allaqachon o‘rnatilgan');
+  } else {
+    // localStorage orqali foydalanuvchi avval "Keyinroq" bosganligini tekshiramiz
+    const dismissed = localStorage.getItem('pwa-install-dismissed');
+    if (!dismissed) {
+      window.addEventListener('beforeinstallprompt', (e) => {
+        // Standart brauzer panelini bloklaymiz
+        e.preventDefault();
+        deferredPrompt = e;
+        // Bannerni ko‘rsatamiz
+        setTimeout(() => {
+          installBanner.classList.remove('hidden');
+          installBanner.classList.remove('translate-y-2', 'opacity-0');
+        }, 2000); // 2 soniyadan keyin chiroyli chiqadi
+      });
+    }
+  }
+
+  // O‘rnatish tugmasi bosilganda
+  installBtn.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    // Tugmani bosilgandan keyin promptni ko‘rsatamiz
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log('Foydalanuvchi tanlovi:', outcome);
+    if (outcome === 'accepted') {
+      // O‘rnatildi – bannerni yashirib, localStorage ni tozalaymiz (kerak emas)
+      installBanner.classList.add('hidden');
+      localStorage.removeItem('pwa-install-dismissed');
+    } else {
+      // Bekor qilindi – bannerni yopamiz, lekin keyinroq qayta ko‘rsatilmasligi uchun localStorage ga yozamiz
+      installBanner.classList.add('hidden');
+      localStorage.setItem('pwa-install-dismissed', 'true');
+    }
+    deferredPrompt = null;
+  });
+
+  // "Keyinroq" tugmasi bosilganda
+  closeBtn.addEventListener('click', () => {
+    installBanner.classList.add('hidden');
+    localStorage.setItem('pwa-install-dismissed', 'true');
+    deferredPrompt = null;
+  });
+})();
+</script>

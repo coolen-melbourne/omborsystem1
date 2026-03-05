@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Savat | MILANA PREMIUM</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+            background-color: #F2F2F7; /* iOS System Gray 6 */
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        /* iOS uslubidagi karta */
+        .ios-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        /* Input dizayni */
+        .ios-input {
+            background-color: #E9E9EB;
+            border: none;
+            border-radius: 12px;
+            padding: 8px 12px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        /* Tugma haptic effekti */
+        .btn-haptic:active {
+            transform: scale(0.96);
+            opacity: 0.8;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .modal-animate {
+            animation: slideUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+    </style>
+</head>
+<body class="antialiased text-black">
+
+    <div id="global-loader" class="fixed inset-0 bg-white/60 backdrop-blur-md flex items-center justify-center z-[100] hidden">
+        <div class="flex flex-col items-center">
+            <div class="w-10 h-10 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin"></div>
+        </div>
+    </div>
+
+    <header class="sticky top-0 z-40 glass border-b border-gray-200">
+        <div class="max-w-3xl mx-auto px-5 py-4 flex justify-between items-center">
+            <a href="/" class="text-blue-500 font-medium flex items-center gap-1 btn-haptic">
+                <i class="fas fa-chevron-left text-sm"></i> Do‘kon
+            </a>
+            <h1 class="text-lg font-bold">Savat</h1>
+            <div class="w-10 text-right">
+                <a href="/cart" class="relative">
+                    <span class="text-xl">👜</span>
+                    <span id="cart-badge" class="absolute -top-1 -right-2 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center hidden">0</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-3xl mx-auto px-4 py-8 pb-40">
+        
+        <h2 class="text-3xl font-bold tracking-tight mb-6 px-2">Buyurtmangiz</h2>
+
+        {{#if cart.length}}
+        <div class="space-y-4" id="cart-items">
+            {{#each cart}}
+            <div class="ios-card p-4 flex gap-4 items-center" data-product-id="{{this.productId}}">
+                <img src="{{this.image}}" class="w-20 h-20 object-contain bg-gray-50 rounded-2xl p-1">
+                
+                <div class="flex-grow">
+                    <h3 class="font-bold text-sm leading-tight mb-1">{{this.name}}</h3>
+                    <p class="text-xs text-gray-500 mb-2">1 qop = {{this.itemsPerQop}} dona</p>
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-blue-600">${{this.price}}</span>
+                        <div class="flex items-center gap-3">
+                            <input type="number" 
+                                   class="quantity-input ios-input w-16 text-sm" 
+                                   value="{{this.quantity}}" 
+                                   min="1" 
+                                   data-product-id="{{this.productId}}">
+                            <button class="remove-btn text-red-500 w-8 h-8 flex items-center justify-center bg-red-50 rounded-full btn-haptic" 
+                                    data-product-id="{{this.productId}}">
+                                <i class="fas fa-trash-can text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {{/each}}
+        </div>
+
+        <div class="mt-10 ios-card p-6 border border-gray-100">
+            <div class="flex justify-between mb-2">
+                <span class="text-gray-500 font-medium">Jami mahsulot:</span>
+                <span class="font-bold" id="total-items">{{totalItems}} dona</span>
+            </div>
+            <div class="flex justify-between items-center pt-4 border-t border-gray-100">
+                <span class="text-lg font-medium">Umumiy summa:</span>
+                <span class="text-2xl font-black text-blue-600" id="total-price">${{totalPrice}}</span>
+            </div>
+        </div>
+
+        <div class="fixed bottom-0 left-0 right-0 p-6 glass border-t border-gray-100 md:relative md:bg-transparent md:border-none md:p-0 md:mt-8">
+            <div class="max-w-3xl mx-auto flex gap-3">
+                <a href="/" class="flex-1 bg-gray-200 text-center py-4 rounded-2xl font-bold text-sm btn-haptic">Davom etish</a>
+                <button id="checkout-btn" class="flex-[2] bg-blue-500 text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-blue-500/30 btn-haptic">
+                    Rasmiylashtirish
+                </button>
+            </div>
+        </div>
+
+        {{else}}
+        <div class="text-center py-20">
+            <div class="text-6xl mb-6">🛒</div>
+            <p class="text-gray-500 font-medium mb-8">Savatingiz hozircha bo‘sh</p>
+            <a href="/" class="inline-block bg-blue-500 text-white px-10 py-4 rounded-2xl font-bold btn-haptic">Xaridni boshlash</a>
+        </div>
+        {{/if}}
+    </main>
+
+    <div id="checkout-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-end justify-center hidden z-50">
+        <div class="bg-white w-full max-w-xl rounded-t-[32px] p-8 modal-animate">
+            <div class="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-8"></div>
+            <h2 class="text-2xl font-bold mb-6">Ma'lumotlarni to'ldiring</h2>
+            
+            <form id="checkout-form" class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="text" name="firstName" placeholder="Ism" required class="ios-input w-full py-4 text-left px-5 font-medium outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="text" name="lastName" placeholder="Familiya" required class="ios-input w-full py-4 text-left px-5 font-medium outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <input type="tel" name="phone" placeholder="Telefon raqam" required class="ios-input w-full py-4 text-left px-5 font-medium outline-none focus:ring-2 focus:ring-blue-500">
+                
+                <div class="flex gap-3 pt-6">
+                    <button type="button" id="close-modal" class="flex-1 bg-gray-100 py-4 rounded-2xl font-bold btn-haptic">Bekor qilish</button>
+                    <button type="submit" class="flex-[2] bg-blue-500 text-white py-4 rounded-2xl font-bold btn-haptic shadow-lg shadow-blue-500/20">Yuborish</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const loader = document.getElementById('global-loader');
+        function showLoader() { loader.classList.remove('hidden'); }
+        function hideLoader() { loader.classList.add('hidden'); }
+
+        async function updateBadge() {
+            try {
+                const res = await fetch('/cart-data');
+                const data = await res.json();
+                const badge = document.getElementById('cart-badge');
+                if (data.totalItems > 0) {
+                    badge.textContent = data.totalItems;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+            } catch (e) {}
+        }
+
+        // Quantity o'zgarishi
+        document.querySelectorAll('.quantity-input').forEach(input => {
+            input.addEventListener('change', async function() {
+                const productId = this.dataset.productId;
+                const quantity = parseInt(this.value);
+                if (quantity < 1) return;
+                showLoader();
+                try {
+                    const res = await fetch(`/cart/update-ajax/${productId}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ quantity })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        document.getElementById('total-price').innerText = `$${data.totalPrice}`;
+                        document.getElementById('total-items').innerText = `${data.totalItems} dona`;
+                        updateBadge();
+                    }
+                } catch (e) {}
+                finally { hideLoader(); }
+            });
+        });
+
+        // O'chirish
+        document.querySelectorAll('.remove-btn').forEach(btn => {
+            btn.addEventListener('click', async function() {
+                const productId = this.dataset.productId;
+                if(!confirm("Ushbu mahsulotni savatdan o'chirmoqchimisiz?")) return;
+                
+                showLoader();
+                try {
+                    await fetch(`/cart/remove/${productId}`, { method: 'POST' });
+                    this.closest('.ios-card').remove();
+                    
+                    const res = await fetch('/cart-data');
+                    const data = await res.json();
+                    
+                    if (data.totalItems === 0) location.reload();
+                    else {
+                        document.getElementById('total-price').innerText = `$${data.totalPrice}`;
+                        document.getElementById('total-items').innerText = `${data.totalItems} dona`;
+                        updateBadge();
+                    }
+                } catch (e) {}
+                finally { hideLoader(); }
+            });
+        });
+
+        // Modal boshqaruvi
+        const modal = document.getElementById('checkout-modal');
+        document.getElementById('checkout-btn')?.addEventListener('click', () => {
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        });
+        
+        document.getElementById('close-modal').addEventListener('click', () => {
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        });
+
+        document.getElementById('checkout-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const data = Object.fromEntries(new FormData(this));
+            showLoader();
+            try {
+                const res = await fetch('/checkout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                if (result.success) {
+                    modal.classList.add('hidden');
+                    alert('✅ Buyurtmangiz qabul qilindi!');
+                    window.location.href = '/';
+                } else {
+                    alert('Xatolik: ' + (result.error || ''));
+                }
+            } catch (e) {
+                alert('Server bilan aloqa uzildi');
+            } finally {
+                hideLoader();
+            }
+        });
+
+        updateBadge();
+    </script>
+</body>
+</html>

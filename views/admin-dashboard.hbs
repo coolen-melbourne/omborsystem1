@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Admin Dashboard | MILANA PREMIUM</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+            background-color: #F2F2F7; 
+            -webkit-tap-highlight-color: transparent;
+            padding-bottom: 90px;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .ios-card {
+            background: #FFFFFF;
+            border-radius: 16px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+        }
+
+        .ios-input {
+            background-color: #F2F2F7;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 15px;
+            transition: all 0.2s;
+        }
+
+        .ios-input:focus {
+            background-color: #E5E5EA;
+            outline: none;
+            box-shadow: 0 0 0 2px #007AFF20;
+        }
+
+        .btn-haptic:active {
+            transform: scale(0.97);
+            opacity: 0.8;
+        }
+
+        /* --- LOADER STYLES --- */
+        @keyframes ios-spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .ios-loader {
+            width: 20px;
+            height: 20px;
+            border: 2.5px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: ios-spin 0.8s linear infinite;
+            display: none; /* Default yashiriq */
+        }
+
+        .is-loading .ios-loader {
+            display: inline-block;
+        }
+
+        .is-loading .btn-text {
+            display: none;
+        }
+
+        .btn-loading-state {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        /* Status Badges */
+        .badge-active { background: #E1F5FE; color: #007AFF; }
+        .badge-inactive { background: #FEEBEE; color: #FF3B30; }
+        .badge-promo { background: #FFF9C4; color: #FF9500; }
+
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-thumb { background: #D1D1D6; border-radius: 10px; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="hidden md:block sticky top-0 z-40 glass border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <h1 class="text-xl font-bold tracking-tight">MILANA <span class="text-blue-600">PREMIUM</span></h1>
+            <div class="flex items-center gap-6">
+                <div class="text-right">
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Admin</p>
+                    <p class="text-sm font-semibold">Samandar</p>
+                </div>
+                <a href="/logout" class="bg-gray-100 p-2 px-4 rounded-full text-sm font-bold text-gray-600 hover:bg-gray-200 transition btn-haptic">
+                    Chiqish <i class="fas fa-sign-out-alt ml-1"></i>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="md:hidden sticky top-0 z-40 glass border-b border-gray-100 px-5 py-3 flex justify-between items-center">
+        <span class="font-bold text-lg">Mahsulotlar</span>
+        <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+            {{#if user}}{{user.username.[0]}}{{else}}A{{/if}}
+        </div>
+    </div>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+        
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+            <div>
+                <h2 class="text-3xl font-black tracking-tight">MILANA PREMIUM</h2>
+                <p class="text-gray-500 font-medium">Mahsulotlar boshqaruv paneli</p>
+            </div>
+        </div>
+
+        <section class="ios-card p-6 mb-10">
+            <h3 class="text-lg font-bold mb-5 flex items-center gap-2">
+                <i class="fas fa-plus-circle text-blue-500"></i> Yangi mahsulot
+            </h3>
+            <form id="add-product-form" action="/admin/add-product" method="POST" enctype="multipart/form-data" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="md:col-span-2">
+                        <label class="block text-[11px] font-bold text-gray-400 uppercase ml-2 mb-1">Nomi</label>
+                        <input type="text" name="name" required class="ios-input w-full font-medium" placeholder="Mahsulot nomini kiriting">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-400 uppercase ml-2 mb-1">Narxi ($)</label>
+                        <input type="number" step="0.01" name="price" required class="ios-input w-full font-bold" placeholder="0.00">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-400 uppercase ml-2 mb-1">Variant</label>
+                        <input type="text" name="variant" class="ios-input w-full" placeholder="A1, B2...">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-400 uppercase ml-2 mb-1">Zaxira (qop)</label>
+                        <input type="number" name="stock" class="ios-input w-full" value="0">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-400 uppercase ml-2 mb-1">Rasm yuklash</label>
+                        <input type="file" name="image" accept="image/*" class="text-xs file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-6 pt-2">
+                    <label class="flex items-center gap-2 cursor-pointer btn-haptic">
+                        <input type="checkbox" name="active" checked class="w-5 h-5 accent-blue-500 rounded-lg">
+                        <span class="text-sm font-semibold">Active</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer btn-haptic">
+                        <input type="checkbox" name="promotion" class="w-5 h-5 accent-yellow-500 rounded-lg">
+                        <span class="text-sm font-semibold text-yellow-600">Aksiya</span>
+                    </label>
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" id="add-btn" class="w-full md:w-auto bg-blue-500 text-white px-10 py-3 rounded-2xl font-bold btn-haptic shadow-lg shadow-blue-500/20 flex items-center justify-center gap-3">
+                        <span class="btn-text">Mahsulotni saqlash</span>
+                        <div class="ios-loader"></div>
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <div class="ios-card p-4 mb-6 flex flex-wrap gap-3 items-center">
+            <div class="relative flex-1 min-w-[200px]">
+                <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                <input type="text" id="productSearch" placeholder="Qidirish..." class="ios-input w-full pl-10">
+            </div>
+            <select id="filterActive" class="ios-input text-sm font-medium">
+                <option value="">Holat</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+            </select>
+            <button id="applyProductFilter" class="bg-gray-900 text-white px-5 py-2.5 rounded-xl text-sm font-bold btn-haptic">
+                Filtr
+            </button>
+        </div>
+
+        <div class="ios-card overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse" id="productTable">
+                    <thead>
+                        <tr class="bg-gray-50/50 border-b border-gray-100">
+                            <th class="p-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest">Mahsulot</th>
+                            <th class="p-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest">Narx & Variant</th>
+                            <th class="p-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest">Holat</th>
+                            <th class="p-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest text-right">Amallar</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {{#each products}}
+                        <tr class="hover:bg-gray-50/50 transition-colors" 
+                            data-name="{{this.name}}" 
+                            data-variant="{{this.variant}}"
+                            data-active="{{this.active}}" 
+                            data-promotion="{{this.promotion}}">
+                            <td class="p-4">
+                                <div class="flex items-center gap-3">
+                                    <img src="{{this.image}}" class="w-12 h-12 rounded-xl object-cover bg-gray-100 shadow-sm">
+                                    <div>
+                                        <p class="font-bold text-sm leading-tight">{{this.name}}</p>
+                                        <p class="text-[10px] font-mono text-gray-400 mt-1 uppercase">{{this._id}}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="p-4">
+                                <p class="font-bold text-blue-600">${{this.price}}</p>
+                                <p class="text-xs font-medium text-gray-500">Variant: {{#if this.variant}}{{this.variant}}{{else}}N/A{{/if}}</p>
+                            </td>
+                            <td class="p-4">
+                                <div class="flex flex-col gap-1">
+                                    <span class="inline-flex w-fit px-2 py-0.5 rounded-md text-[10px] font-bold uppercase {{#if this.active}}badge-active{{else}}badge-inactive{{/if}}">
+                                        {{#if this.active}}Active{{else}}Off{{/if}}
+                                    </span>
+                                    {{#if this.promotion}}
+                                    <span class="inline-flex w-fit px-2 py-0.5 rounded-md text-[10px] font-bold uppercase badge-promo">Aksiya</span>
+                                    {{/if}}
+                                </div>
+                            </td>
+                            <td class="p-4 text-right">
+                                <div class="flex justify-end gap-2">
+                                    <button class="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center btn-haptic edit-btn"
+                                            data-id="{{this._id}}" 
+                                            data-name="{{this.name}}" 
+                                            data-price="{{this.price}}" 
+                                            data-stock="{{this.stock}}" 
+                                            data-variant="{{this.variant}}"
+                                            data-active="{{this.active}}" 
+                                            data-promotion="{{this.promotion}}"
+                                            data-image="{{this.image}}">
+                                        <i class="fas fa-pen text-xs"></i>
+                                    </button>
+                                    <form action="/admin/delete-product/{{this._id}}" method="POST" onsubmit="return confirm('Oʻchirilsinmi?')">
+                                        <button class="w-8 h-8 rounded-full bg-red-50 text-red-600 flex items-center justify-center btn-haptic">
+                                            <i class="fas fa-trash text-xs"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <nav class="fixed bottom-0 left-0 right-0 md:hidden glass border-t border-gray-100 px-6 py-3 flex justify-between items-center z-50">
+        <a href="/" class="flex flex-col items-center gap-1 text-gray-400 btn-haptic">
+            <i class="fas fa-home text-lg"></i>
+            <span class="text-[10px] font-bold uppercase">Asosiy</span>
+        </a>
+        <a href="/admin/products" class="flex flex-col items-center gap-1 text-blue-500 btn-haptic">
+            <i class="fas fa-box text-lg"></i>
+            <span class="text-[10px] font-bold uppercase">Mahsulot</span>
+        </a>
+        <a href="/cart" class="flex flex-col items-center gap-1 text-gray-400 btn-haptic relative">
+            <i class="fas fa-shopping-bag text-lg"></i>
+            <span id="cart-badge-bottom" class="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center hidden">0</span>
+            <span class="text-[10px] font-bold uppercase">Savat</span>
+        </a>
+        <a href="/logout" class="flex flex-col items-center gap-1 text-gray-400 btn-haptic">
+            <i class="fas fa-user-circle text-lg"></i>
+            <span class="text-[10px] font-bold uppercase">Chiqish</span>
+        </a>
+    </nav>
+
+    <div id="edit-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] hidden flex items-end sm:items-center justify-center">
+        <div class="bg-white w-full max-w-lg rounded-t-[32px] sm:rounded-3xl p-6 shadow-2xl animate-in slide-in-from-bottom duration-300">
+            <div class="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-6 sm:hidden"></div>
+            <h2 class="text-2xl font-black mb-6">Tahrirlash</h2>
+            
+            <form id="edit-form" method="POST" enctype="multipart/form-data" class="space-y-4">
+                <input type="hidden" name="id" id="edit-id">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="col-span-2">
+                        <label class="text-[11px] font-bold text-gray-400 uppercase ml-2">Nomi</label>
+                        <input type="text" name="name" id="edit-name" required class="ios-input w-full font-bold">
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-bold text-gray-400 uppercase ml-2">Narx</label>
+                        <input type="number" step="0.01" name="price" id="edit-price" required class="ios-input w-full font-bold">
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-bold text-gray-400 uppercase ml-2">Variant</label>
+                        <input type="text" name="variant" id="edit-variant" class="ios-input w-full">
+                    </div>
+                </div>
+
+                <div class="flex gap-4 items-center py-2">
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" name="active" id="edit-active" class="w-5 h-5 accent-blue-500">
+                        <span class="text-sm font-bold">Active</span>
+                    </label>
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" name="promotion" id="edit-promotion" class="w-5 h-5 accent-yellow-500">
+                        <span class="text-sm font-bold">Aksiya</span>
+                    </label>
+                </div>
+
+                <div class="flex flex-col gap-3 pt-4">
+                    <button type="submit" id="edit-submit-btn" class="bg-blue-500 text-white py-4 rounded-2xl font-bold btn-haptic flex items-center justify-center gap-3">
+                        <span class="btn-text">O'zgarishlarni saqlash</span>
+                        <div class="ios-loader"></div>
+                    </button>
+                    <button type="button" id="close-modal" class="bg-gray-100 text-gray-600 py-4 rounded-2xl font-bold btn-haptic">Bekor qilish</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Badge Update
+            function updateCartBadge() {
+                fetch('/cart-data')
+                    .then(res => res.json())
+                    .then(data => {
+                        const badge = document.getElementById('cart-badge-bottom');
+                        if (data.totalItems > 0) {
+                            badge.textContent = data.totalItems;
+                            badge.classList.remove('hidden');
+                        }
+                    });
+            }
+            updateCartBadge();
+
+            // --- LOADER LOGIC ---
+            function activateLoader(formId, buttonId) {
+                const form = document.getElementById(formId);
+                const btn = document.getElementById(buttonId);
+                if (form && btn) {
+                    form.addEventListener('submit', function() {
+                        btn.classList.add('is-loading', 'btn-loading-state');
+                    });
+                }
+            }
+            activateLoader('add-product-form', 'add-btn');
+            activateLoader('edit-form', 'edit-submit-btn');
+
+            // Modal Logic
+            const modal = document.getElementById('edit-modal');
+            const editForm = document.getElementById('edit-form');
+            
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.getElementById('edit-id').value = this.dataset.id;
+                    document.getElementById('edit-name').value = this.dataset.name;
+                    document.getElementById('edit-price').value = this.dataset.price;
+                    document.getElementById('edit-variant').value = this.dataset.variant || '';
+                    document.getElementById('edit-active').checked = this.dataset.active === 'true';
+                    document.getElementById('edit-promotion').checked = this.dataset.promotion === 'true';
+                    editForm.action = `/admin/edit-product/${this.dataset.id}`;
+                    modal.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                });
+            });
+
+            document.getElementById('close-modal').addEventListener('click', () => {
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            });
+
+            // Filtering
+            const productSearch = document.getElementById('productSearch');
+            const filterActive = document.getElementById('filterActive');
+            const applyFilter = document.getElementById('applyProductFilter');
+            const rows = document.querySelectorAll('#productTable tbody tr');
+
+            function filter() {
+                const search = productSearch.value.toLowerCase();
+                const active = filterActive.value;
+
+                rows.forEach(row => {
+                    const name = row.dataset.name.toLowerCase();
+                    const rowActive = row.dataset.active === 'true';
+                    let show = name.includes(search);
+                    
+                    if (active === 'active' && !rowActive) show = false;
+                    if (active === 'inactive' && rowActive) show = false;
+                    
+                    row.style.display = show ? '' : 'none';
+                });
+            }
+
+            applyFilter.addEventListener('click', filter);
+            productSearch.addEventListener('input', filter);
+        });
+    </script>
+</body>
+</html>

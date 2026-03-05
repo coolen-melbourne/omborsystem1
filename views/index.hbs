@@ -1,17 +1,81 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
+<html lang="uz" class="dark"> <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>{{title}}</title>
-    <!-- Tailwind CSS CDN -->
+    
+    <meta name="theme-color" content="#0a0a0c" id="theme-color-meta">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        ios: {
+                            lightBg: '#fbfbfd',
+                            darkBg: '#0a0a0c',
+                            accent: '#0071e3'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+        * {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            letter-spacing: -0.01em;
+        }
+
+        /* Fon ranglarini silliq qilish */
+        .dark body { background-color: #0a0a0c; color: #f5f5f7; }
+        body { background-color: #fbfbfd; color: #1d1d1f; }
+
+        /* Scrollbar dizayni */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        .dark ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #ddd; border-radius: 10px; }
+    </style>
 </head>
-<body class="bg-gray-50 font-sans antialiased">
+<body class="antialiased min-h-screen flex flex-col">
 
-    {{> home}}  <!-- home.hbs partiali shu yerga joylanadi -->
+    {{> head}}
 
+    <main class="flex-grow">
+        {{> home}}
+    </main>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('PWA: Ready'))
+                    .catch(err => console.error('PWA: Error', err));
+            });
+        }
+
+        // Tizim rangini tekshirish (agar localStorage bo'sh bo'lsa)
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
 </body>
 </html>

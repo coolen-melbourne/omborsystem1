@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); background-color: #fbbf24; }
+            100% { transform: scale(1); }
+        }
+        .pop-animation {
+            animation: pop 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans antialiased">
+
+    <!-- Navbar -->
+    <nav class="bg-white shadow p-4">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <a href="/" class="text-xl font-light">minimal.</a>
+            <div class="flex items-center gap-4">
+                <span class="text-gray-700">{{salespersonName}}</span>
+                <a href="/logout" class="bg-red-500 text-white px-4 py-2 rounded-full text-sm">Chiqish</a>
+                <a href="/cart" class="relative">
+                    <i class="fas fa-shopping-cart text-xl"></i>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <h1 class="text-3xl font-light mb-8">Sotuvchi paneli: {{salespersonName}}</h1>
+
+        <!-- Katta statistika kartasi (animatsiyali) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-2xl shadow-lg p-6 transform hover:scale-105 transition" id="cardToday">
+                <p class="text-sm uppercase opacity-90">Bugun sotilgan qop</p>
+                <p class="text-5xl font-bold">{{totalQopsToday}}</p>
+            </div>
+            <div class="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-2xl shadow-lg p-6 transform hover:scale-105 transition" id="cardMonth">
+                <p class="text-sm uppercase opacity-90">Oy davomida</p>
+                <p class="text-5xl font-bold">{{totalQopsMonth}}</p>
+            </div>
+            <div class="bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-2xl shadow-lg p-6 transform hover:scale-105 transition" id="cardTotal">
+                <p class="text-sm uppercase opacity-90">Jami sotgan</p>
+                <p class="text-5xl font-bold">{{totalQopsOverall}}</p>
+            </div>
+        </div>
+
+        <!-- Buyurtmalar tarixi -->
+        <h2 class="text-2xl font-light mb-4">Sizning buyurtmalaringiz</h2>
+
+        {{#if grouped}}
+            {{#each grouped}}
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold mb-2">{{@key}}</h3>
+                <div class="bg-white rounded-xl shadow overflow-hidden">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="p-3 text-left">Mijoz</th>
+                                <th class="p-3 text-left">Telefon</th>
+                                <th class="p-3 text-left">Mahsulotlar</th>
+                                <th class="p-3 text-left">Dona</th>
+                                <th class="p-3 text-left">Summa</th>
+                                <th class="p-3 text-left">PDF</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#each this}}
+                            <tr class="border-b">
+                                <td class="p-3">{{this.firstName}} {{this.lastName}}</td>
+                                <td class="p-3">{{this.phone}}</td>
+                                <td class="p-3">
+                                    {{#each this.items}}
+                                    <div>{{this.name}} ({{this.variant}}): {{this.quantity}} qop</div>
+                                    {{/each}}
+                                </td>
+                                <td class="p-3">{{this.totalItems}}</td>
+                                <td class="p-3">${{this.totalPrice}}</td>
+                                <td class="p-3">
+                                    <a href="/order/pdf/{{this._id}}" target="_blank" class="text-blue-600 hover:text-blue-800">
+                                        <i class="fas fa-file-pdf"></i> PDF
+                                    </a>
+                                </td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {{/each}}
+        {{else}}
+            <p class="text-gray-500">Hali hech qanday buyurtma qabul qilmagansiz.</p>
+        {{/if}}
+    </main>
+
+    <script>
+        // Animation on load
+        document.querySelectorAll('.bg-gradient-to-r').forEach(card => {
+            card.classList.add('pop-animation');
+            setTimeout(() => card.classList.remove('pop-animation'), 500);
+        });
+    </script>
+</body>
+</html>

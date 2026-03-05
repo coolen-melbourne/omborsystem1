@@ -1,155 +1,121 @@
+require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
+// Yuqorida:
+const MongoStore = require('connect-mongo').default ? require('connect-mongo').default : require('connect-mongo');
+const compression = require('compression');
+const minify = require('express-minify-html');
 const path = require('path');
 const hbs = require('hbs');
+const mongoose = require('mongoose');
+const connectDB = require('./config/db');
+const authRoutes = require('./routes/authRoutes');
+const productRoutes = require('./routes/productRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+const cartRoutes = require('./routes/cartRoutes');
+const orderRoutes = require('./routes/orderRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
+const errorHandler = require('./middleware/errorHandler');
+
+// Helpers
+require('./utils/helpers');
 
 const app = express();
-const port = 3150;
+const port = process.env.PORT || 3150;
 
-// Handlebars helper: eq (tenglikni tekshirish)
-hbs.registerHelper('eq', function(a, b) {
-    return a === b;
+// Compression
+app.use(compression());
+
+// HTML minifikatsiya (production)
+if (process.env.NODE_ENV === 'production') {
+    app.use(minify({
+        override: true,
+        exception_url: false,
+        htmlMinifier: {
+            removeComments: true,
+            collapseWhitespace: true,
+            removeAttributeQuotes: true,
+            minifyJS: true,
+            minifyCSS: true
+        }
+    }));
+}
+
+// MongoDB ulanish va indekslar yaratish
+connectDB().then(async () => {
+    const db = mongoose.connection;
+    try {
+        // Indekslar (users kolleksiyasi uchun indeks modelda belgilangan, shuning uchun bu yerda qayta yaratilmaydi)
+        await db.collection('products').createIndex({ active: 1, stock: 1 });
+        await db.collection('orders').createIndex({ status: 1 });
+        await db.collection('orders').createIndex({ acceptedBy: 1 });
+        await db.collection('orders').createIndex({ createdAt: -1 });
+        await db.collection('inventories').createIndex({ productId: 1, variant: 1 });
+        console.log('Indekslar yaratildi');
+    } catch (err) {
+        // Agar indeks nomi bilan bog'liq xatolik bo'lsa (code 86), e'tiborsiz qoldiramiz
+        if (err.code === 86) {
+            console.log('Indeks allaqachon mavjud, davom etiladi.');
+        } else {
+            console.error('Indeks yaratishda xatolik:', err);
+        }
+    }
 });
 
-// Body parser
+// Sessiya
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({
+        mongoUrl: process.env.MONGO_URL,
+        touchAfter: 24 * 3600
+    }),
+    cookie: { maxAge: 1000 * 60 * 60, httpOnly: true }
+}));
+
+
+    app.get('/test-session', (req, res) => {
+  res.json({ session: req.session });
+});
+
+
+
+// Body parsers
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// Sessiya sozlash
-app.use(session({
-    secret: 'mySuperSecretKey123',
-    resave: false,
-    saveUninitialized: true,
-    cookie: { maxAge: 1000 * 60 * 60 } // 1 soat
+// Statik fayllar (keshlash bilan)
+app.use(express.static(path.join(__dirname, 'public'), {
+    maxAge: '1d',
+    setHeaders: (res, filePath) => {
+        if (filePath.match(/\.(jpg|jpeg|png|gif|webp|svg|ico)$/)) {
+            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        }
+    }
 }));
 
-// Public folder
-app.use(express.static(path.join(__dirname, 'public')));
-
-// HBS sozlamalari
+// View engine
 app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'views'));
 hbs.registerPartials(path.join(__dirname, 'views/partials'));
 
-// 3 ta oldindan belgilangan foydalanuvchi
-const users = [
-    { username: 'user1', password: 'parol1' },
-    { username: 'user2', password: 'parol2' },
-    { username: 'user3', password: 'parol3' }
-];
+// Routes
+app.use('/', productRoutes);
+app.use('/', authRoutes);
+app.use('/', cartRoutes);
+app.use('/', orderRoutes);
+app.use('/', dashboardRoutes);
+app.use('/', adminRoutes);
 
-// Himoyalangan sahifalar uchun middleware
-function requireLogin(req, res, next) {
-    if (req.session && req.session.user) {
-        return next();
-    } else {
-        req.session.returnTo = req.originalUrl;
-        return res.redirect('/login');
-    }
-}
-
-// ---------- ROUTES ----------
-
-// Asosiy marketpleys sahifasi (hamma ochiq)
-app.get('/', (req, res) => {
-    res.render('index', { 
-        title: 'Mukammal Marketplace',
-        user: req.session.user
-    });
+// 404
+app.use((req, res) => {
+    res.status(404).send('Sahifa topilmadi');
 });
 
-// Login sahifasi (GET)
-app.get('/login', (req, res) => {
-    if (req.session.user) {
-        return res.redirect('/dashboard');
-    }
-    const returnTo = req.query.returnTo || '/dashboard';
-    res.render('login', { 
-        title: 'Kirish', 
-        error: null,
-        returnTo
-    });
-});
+// Error handler
+app.use(errorHandler);
 
-// Login (POST)
-app.post('/login', (req, res) => {
-    const { username, password, returnTo } = req.body;
-    const user = users.find(u => u.username === username && u.password === password);
-    if (user) {
-        req.session.user = { username: user.username };
-        if (!req.session.transactions) {
-            req.session.transactions = [];
-        }
-        const redirectUrl = returnTo || '/dashboard';
-        return res.redirect(redirectUrl);
-    } else {
-        res.render('login', { 
-            title: 'Kirish', 
-            error: 'Login yoki parol noto‘g‘ri',
-            returnTo: returnTo || '/dashboard'
-        });
-    }
-});
-
-// Logout
-app.get('/logout', (req, res) => {
-    req.session.destroy(() => {
-        res.redirect('/');
-    });
-});
-
-// DASHBOARD – kirim/chiqim boshqaruvi (faqat login qilganlar)
-app.get('/dashboard', requireLogin, (req, res) => {
-    const transactions = req.session.transactions || [];
-
-    let totalIncome = 0;
-    let totalExpense = 0;
-    transactions.forEach(t => {
-        if (t.type === 'income') totalIncome += t.amount;
-        else totalExpense += t.amount;
-    });
-    const balance = totalIncome - totalExpense;
-
-    res.render('dashboard', {
-        title: 'Dashboard',
-        user: req.session.user,
-        transactions,
-        totalIncome,
-        totalExpense,
-        balance
-    });
-});
-
-// Yangi tranzaksiya qo'shish (POST)
-app.post('/dashboard/add', requireLogin, (req, res) => {
-    const { type, description, amount } = req.body;
-    if (!type || !description || !amount) {
-        return res.redirect('/dashboard');
-    }
-    const newTransaction = {
-        id: Date.now() + Math.random(),
-        type,
-        description,
-        amount: parseFloat(amount),
-        date: new Date().toLocaleString('uz-UZ')
-    };
-    if (!req.session.transactions) {
-        req.session.transactions = [];
-    }
-    req.session.transactions.push(newTransaction);
-    res.redirect('/dashboard');
-});
-
-// Tranzaksiyani o'chirish
-app.post('/dashboard/delete/:id', requireLogin, (req, res) => {
-    const id = parseFloat(req.params.id);
-    if (req.session.transactions) {
-        req.session.transactions = req.session.transactions.filter(t => t.id !== id);
-    }
-    res.redirect('/dashboard');
-});
-
-// Serverni ishga tushirish
-app.listen(port, () => {
-    console.log(`Server http://localhost:${port} da ishlamoqda`);
+app.listen(port, '0.0.0.0', () => {
+    console.log(`Server http://localhost:${port} da ishga tushdi`);
 });

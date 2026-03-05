@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>{{title}} – </title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome (defer) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" media="print" onload="this.media='all'">
+    <style>
+        /* iOS shriftlari va asosiy sozlamalar */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f2f2f7;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* ===== iOS komponentlari ===== */
+        .ios-card {
+            background-color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 24px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.02), 0 2px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .ios-card-solid {
+            background-color: #ffffff;
+            border-radius: 22px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03), 0 1px 4px rgba(0, 0, 0, 0.02);
+        }
+
+        /* Tugmalar */
+        .ios-button {
+            background-color: #007aff;
+            color: white;
+            border-radius: 40px;
+            padding: 12px 24px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .ios-button-secondary {
+            background-color: #f2f2f7;
+            color: #007aff;
+            border-radius: 40px;
+            padding: 12px 24px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border: 1px solid #c6c6c8;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .ios-button:active { background-color: #005bbf; transform: scale(0.97); }
+        .ios-button-secondary:active { background-color: #e5e5ea; }
+
+        /* Navigatsiya paneli */
+        .ios-navbar {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .ios-tabbar {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 32px 32px 0 0;
+            padding: 14px 0 10px;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.02);
+        }
+
+        /* Bildirishnoma banneri */
+        .ios-notification {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            color: white;
+            border-radius: 60px;
+            padding: 14px 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+
+        /* Modal oyna */
+        .ios-modal {
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 32px;
+            box-shadow: 0 30px 50px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+
+        /* ===== Jadvallar uchun yangi iOS uslubi ===== */
+        .ios-table-container {
+            border-radius: 28px;
+            background: white;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+        }
+
+        .ios-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .ios-table thead tr {
+            background: #f8f8fc;
+            border-bottom: 1px solid #e9e9ed;
+        }
+
+        .ios-table th {
+            padding: 16px 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #3a3a44;
+            font-size: 0.8rem;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+
+        .ios-table td {
+            padding: 14px 12px;
+            border-bottom: 1px solid #f0f0f5;
+            color: #1c1c1e;
+            vertical-align: middle;
+        }
+
+        .ios-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .ios-table tbody tr:hover {
+            background-color: #f8f8fc;
+        }
+
+        /* Kichik ekranlarda jadval hujayralari */
+        @media (max-width: 640px) {
+            .ios-table th, .ios-table td {
+                padding: 12px 8px;
+                font-size: 0.8rem;
+            }
+        }
+
+        /* Status belgisi */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .status-new { background: #ffd60a; color: #3a2e00; }
+        .status-accepted { background: #30b0c0; color: #f0fcfc; }
+
+        /* Stat kartalar */
+        .stat-card-ios {
+            background: white;
+            border-radius: 28px;
+            padding: 1.2rem;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.02);
+            border: 1px solid #f0f0f3;
+            transition: all 0.2s;
+        }
+        .stat-card-ios:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.03);
+        }
+
+        /* Loader */
+        .ios-loader {
+            border: 4px solid rgba(0,122,255,0.2);
+            border-top: 4px solid #007aff;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Pagination tugmalari */
+        .pagination-ios {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .pagination-ios button {
+            background: white;
+            border: 1px solid #e5e5ea;
+            border-radius: 40px;
+            padding: 10px 16px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #007aff;
+            transition: all 0.2s;
+            min-width: 44px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .pagination-ios button:active {
+            background: #f2f2f7;
+        }
+        .pagination-ios button:disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        /* Animatsiyalar */
+        .fade-in { animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        @media (max-width: 640px) {
+            body { padding-bottom: 90px; }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Loader -->
+    <div id="global-loader" class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50 hidden backdrop-blur-sm">
+        <div class="ios-modal p-8 flex flex-col items-center">
+            <div class="ios-loader"></div>
+            <p class="text-gray-700 mt-6 font-medium">Yuklanmoqda...</p>
+        </div>
+    </div>
+
+    <!-- Refresh banner -->
+    <div id="refresh-banner" class="fixed top-6 left-1/2 transform -translate-x-1/2 ios-notification z-50 hidden items-center gap-4 px-5 py-3">
+        <span>🆕 Yangi buyurtmalar bor</span>
+        <button id="refresh-btn" class="bg-white text-black px-6 py-2 rounded-full text-sm font-semibold hover:bg-gray-100 transition">Yangilash</button>
+    </div>
+
+    <!-- Desktop navbar -->
+    <header class="ios-navbar sticky top-0 z-10 hidden md:block">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <a href="/" class="text-2xl font-semibold text-gray-800 tracking-tight">MILANA PREMIUM</a>
+            <div class="flex items-center gap-5">
+                <span class="text-sm text-gray-600 font-medium">{{user.username}}</span>
+                <a href="/salesperson" class="text-sm bg-gray-100 text-blue-600 px-5 py-2.5 rounded-full hover:bg-gray-200 transition">
+                    <i class="fas fa-user mr-1"></i> Mening savdolarim
+                </a>
+                <a href="/logout" class="text-sm bg-gray-100 px-5 py-2.5 rounded-full hover:bg-gray-200 transition">
+                    <i class="fas fa-sign-out-alt mr-1"></i> Chiqish
+                </a>
+                <a href="/cart" class="relative text-xl">
+                    <i class="fas fa-shopping-cart text-gray-800"></i>
+                    <span id="cart-badge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 hidden">0</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile navbar -->
+    <nav class="fixed bottom-0 left-0 right-0 md:hidden ios-tabbar z-20 flex justify-around items-center">
+        <a href="/" class="flex flex-col items-center text-blue-600">
+            <i class="fas fa-home text-xl"></i><span class="text-xs font-medium mt-1">Bosh</span>
+        </a>
+        <a href="/salesperson" class="flex flex-col items-center text-gray-600">
+            <i class="fas fa-chart-line text-xl"></i><span class="text-xs font-medium mt-1">Mening</span>
+        </a>
+        <a href="/cart" class="flex flex-col items-center text-gray-600 relative">
+            <i class="fas fa-shopping-cart text-xl"></i><span class="text-xs font-medium mt-1">Savat</span>
+            <span id="cart-badge-bottom" class="absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full w-4 h-4 hidden">0</span>
+        </a>
+        <a href="/logout" class="flex flex-col items-center text-gray-600">
+            <i class="fas fa-sign-out-alt text-xl"></i><span class="text-xs font-medium mt-1">Chiqish</span>
+        </a>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-12">
+        <!-- Sarlavha va yangi buyurtmalar soni -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+            <h1 class="text-4xl sm:text-5xl font-semibold tracking-tight text-gray-800">Hisobot</h1>
+            <div class="flex items-center gap-2 bg-blue-50 text-blue-700 px-6 py-3 rounded-full text-sm font-medium ios-card-solid">
+                <i class="fas fa-bell"></i>
+                <span class="font-medium" id="new-orders-count">{{orders.length}} ta yangi</span>
+            </div>
+        </div>
+
+       
+
+        <!-- Yangi buyurtmalar bloki (iOS kartalari) -->
+        <div id="notifications-container" class="space-y-4 mb-8">
+            {{#each orders}}
+            <div class="ios-card p-6 notification flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4" data-order-id="{{this._id}}">
+                <div>
+                    <p class="font-semibold text-lg">{{this.firstName}} {{this.lastName}}</p>
+                    <p class="text-sm text-gray-600">{{this.phone}} – {{this.totalItems}} dona, ${{this.totalPrice}}</p>
+                </div>
+                <div class="flex gap-3 self-end sm:self-auto">
+                    <button class="details-btn ios-button-secondary text-sm py-3 px-5" data-order-id="{{this._id}}">Batafsil</button>
+                    <button class="acknowledge-btn ios-button text-sm py-3 px-5" data-order-id="{{this._id}}">Ko‘rdim</button>
+                </div>
+            </div>
+            {{/each}}
+        </div>
+
+        <!-- Stat kartalar (iOS) -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-10" id="stats-cards">
+            <div class="stat-card-ios">
+                <p class="text-xs uppercase text-gray-500 font-medium">Jami qop</p>
+                <p class="text-3xl sm:text-4xl font-semibold text-blue-600" id="totalBags">{{totalBags}}</p>
+            </div>
+            <div class="stat-card-ios">
+                <p class="text-xs uppercase text-gray-500 font-medium">Jami qiymat</p>
+                <p class="text-3xl sm:text-4xl font-semibold text-green-600" id="totalValue">${{totalValue}}</p>
+            </div>
+            <div class="stat-card-ios">
+                <p class="text-xs uppercase text-gray-500 font-medium">Kunlik kirim</p>
+                <p class="text-3xl sm:text-4xl font-semibold text-yellow-600" id="dailyIncome">${{dailyIncome}}</p>
+            </div>
+            <div class="stat-card-ios">
+                <p class="text-xs uppercase text-gray-500 font-medium">Kunlik chiqim</p>
+                <p class="text-3xl sm:text-4xl font-semibold text-red-600" id="dailyExpense">${{dailyExpense}}</p>
+            </div>
+        </div>
+
+        <!-- Oylik sotuvchilar hisoboti -->
+        <div class="ios-table-container mt-8">
+            <div class="p-5 border-b border-gray-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white/50">
+                <h2 class="text-xl font-semibold"><i class="fas fa-calendar-alt text-blue-600 mr-2"></i>Oylik sotuvchilar</h2>
+                <div class="flex flex-wrap items-center gap-4">
+                    <span class="text-sm text-gray-500">Sahifa: <span id="monthly-current-page">1</span> / <span id="monthly-total-pages">1</span></span>
+                    <div class="pagination-ios">
+                        <button id="monthly-prev" disabled>«</button>
+                        <button id="monthly-next" disabled>»</button>
+                    </div>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="ios-table">
+                    <thead>
+                        <tr>
+                            <th>№</th>
+                            <th>Sotuvchi</th>
+                            <th>Yil</th>
+                            <th>Oy</th>
+                            <th>Buyurtmalar</th>
+                            <th>Jami qop</th>
+                            <th>Jami summa ($)</th>
+                            <th>O‘rtacha</th>
+                        </tr>
+                    </thead>
+                    <tbody id="monthlySummaryBody">
+                        <tr><td colspan="8" class="text-center py-8 text-gray-400">Yuklanmoqda...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Barcha buyurtmalar -->
+        <div class="ios-table-container mt-8">
+            <div class="p-5 border-b border-gray-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white/50">
+                <h2 class="text-xl font-semibold"><i class="fas fa-table text-gray-600 mr-2"></i>Barcha buyurtmalar</h2>
+                <div class="flex flex-wrap items-center gap-4">
+                    <label class="text-sm text-gray-500 flex items-center gap-2">Ko‘rsatish:
+                        <select id="orders-page-size" class="border border-gray-200 rounded-full text-sm p-2.5 bg-white">
+                            <option>10</option><option>25</option><option>50</option><option>100</option>
+                        </select>
+                    </label>
+                    <span class="text-sm text-gray-500">Sahifa: <span id="orders-current-page">1</span> / <span id="orders-total-pages">1</span></span>
+                    <div class="pagination-ios">
+                        <button id="orders-prev" disabled>«</button>
+                        <button id="orders-next" disabled>»</button>
+                    </div>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="ios-table">
+                    <thead>
+                        <tr>
+                            <th>№</th><th>Sana</th><th>Mijoz</th><th>Telefon</th><th>Mahsulot</th><th>Variant</th><th>Qop</th><th>1 qopda</th><th>Narx</th><th>Jami</th><th>Holat</th><th>Qabul qildi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orders-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal: Buyurtma tafsilotlari -->
+    <div id="orderModal" class="fixed inset-0 flex items-center justify-center z-50 hidden bg-black bg-opacity-40 backdrop-blur-sm">
+        <div class="ios-modal w-full max-w-2xl mx-4 p-6 max-h-[80vh] overflow-y-auto">
+            <h2 class="text-2xl font-semibold mb-5">Buyurtma tafsilotlari</h2>
+            <div id="modalContent"></div>
+            <div class="mt-6 flex justify-end">
+                <button id="closeModal" class="ios-button-secondary px-6 py-3">Yopish</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Ism kiritish -->
+    <div id="nameModal" class="fixed inset-0 flex items-center justify-center z-50 hidden bg-black bg-opacity-40 backdrop-blur-sm">
+        <div class="ios-modal w-full max-w-md mx-4 p-6">
+            <h2 class="text-2xl font-semibold mb-4 text-center">Ismingizni kiriting</h2>
+            <input type="text" id="salespersonName" placeholder="Masalan: Oybek" class="w-full border border-gray-200 rounded-2xl px-5 py-4 mb-5 focus:ring-2 focus:ring-blue-500 bg-white/80">
+            <div class="flex justify-end gap-3">
+                <button id="cancelName" class="ios-button-secondary px-6 py-3">Bekor qilish</button>
+                <button id="submitName" class="ios-button px-6 py-3">Tasdiqlash</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Muvaffaqiyatli buyurtma -->
+    <div id="successModal" class="fixed inset-0 flex items-center justify-center z-50 hidden bg-black bg-opacity-40 backdrop-blur-sm">
+        <div class="ios-modal w-full max-w-md mx-4 p-8 text-center">
+            <i class="fas fa-check-circle text-green-500 text-6xl mb-4"></i>
+            <h2 class="text-3xl font-semibold mb-2">Qabul qilindi!</h2>
+            <p class="text-gray-600 mb-6">Tez orada bog‘lanamiz.</p>
+            <button id="closeSuccessModal" class="ios-button px-8 py-3">OK</button>
+        </div>
+    </div>
+
+    <footer class="border-t border-gray-200 py-4 text-center text-gray-400 text-xs bg-white/80 backdrop-blur-sm">
+        <div class="max-w-7xl mx-auto px-5">© 2025 MILANA PREMIUM</div>
+    </footer>
+
+    <!-- Barcha buyurtmalar maʼlumotlari -->
+    <script id="orders-data" type="application/json">{{{json allOrders}}}</script>
+
+    <script>
+        (function() {
+            const loader = document.getElementById('global-loader');
+            const showLoader = () => loader?.classList.remove('hidden');
+            const hideLoader = () => loader?.classList.add('hidden');
+
+            // Badge yangilash
+            async function updateBadge() {
+                try {
+                    const res = await fetch('/cart-data');
+                    const data = await res.json();
+                    const total = data.totalItems;
+                    ['cart-badge', 'cart-badge-bottom'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) {
+                            if (total > 0) {
+                                el.textContent = total;
+                                el.classList.remove('hidden');
+                            } else {
+                                el.classList.add('hidden');
+                            }
+                        }
+                    });
+                } catch (e) {}
+            }
+
+            // Modal elementlari (buyurtma tafsilotlari)
+            const modal = document.getElementById('orderModal');
+            const modalContent = document.getElementById('modalContent');
+            const closeModal = document.getElementById('closeModal');
+            closeModal?.addEventListener('click', () => modal.classList.add('hidden'));
+            window.addEventListener('click', e => { if (e.target === modal) modal.classList.add('hidden'); });
+
+            // Batafsil tugmalari
+            document.querySelectorAll('.details-btn').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    const orderId = this.dataset.orderId;
+                    try {
+                        const res = await fetch(`/order-details/${orderId}`);
+                        const order = await res.json();
+                        let html = `<div class="mb-4"><p><strong>Mijoz:</strong> ${order.firstName} ${order.lastName}</p>
+                                    <p><strong>Telefon:</strong> ${order.phone}</p>
+                                    <p><strong>Sana:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
+                                    <p><strong>Holat:</strong> ${order.status}</p>`;
+                        if (order.acceptedBy) html += `<p><strong>Qabul qildi:</strong> ${order.acceptedBy}</p>`;
+                        html += `</div><table class="w-full text-sm"><thead><tr><th>Rasm</th><th>Mahsulot</th><th>Soni</th><th>Narxi</th><th>Summa</th></tr></thead><tbody>`;
+                        order.items.forEach(item => {
+                            html += `<tr><td><img src="${item.image}" class="w-8 h-8 object-cover rounded" loading="lazy"></td>
+                                    <td>${item.name}</td>
+                                    <td>${item.quantity} qop (${item.itemsPerQop} dona/qop)</td>
+                                    <td>$${item.price}</td>
+                                    <td>$${item.price * item.quantity * item.itemsPerQop}</td></tr>`;
+                        });
+                        html += `<tfoot><tr><td colspan="4" class="text-right font-bold">Jami:</td><td>$${order.totalPrice}</td></tr></tfoot></table>`;
+                        modalContent.innerHTML = html;
+                        modal.classList.remove('hidden');
+                    } catch (e) { alert('Xatolik'); }
+                });
+            });
+
+            // Ism kiritish modal
+            const nameModal = document.getElementById('nameModal');
+            const nameInput = document.getElementById('salespersonName');
+            const cancelName = document.getElementById('cancelName');
+            const submitName = document.getElementById('submitName');
+            let pendingOrderId = null;
+
+            cancelName.addEventListener('click', () => {
+                nameModal.classList.add('hidden');
+                nameInput.value = '';
+                pendingOrderId = null;
+            });
+            window.addEventListener('click', e => { if (e.target === nameModal) nameModal.classList.add('hidden'); });
+
+            document.querySelectorAll('.acknowledge-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    pendingOrderId = this.dataset.orderId;
+                    nameInput.value = '';
+                    nameModal.classList.remove('hidden');
+                });
+            });
+
+            submitName.addEventListener('click', async () => {
+                const name = nameInput.value.trim();
+                if (!name) {
+                    alert('Ism kiritilishi shart');
+                    return;
+                }
+                nameModal.classList.add('hidden');
+                const orderId = pendingOrderId;
+                pendingOrderId = null;
+                showLoader();
+                try {
+                    const res = await fetch(`/orders/acknowledge/${orderId}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        window.open(`/order/pdf/${orderId}`, '_blank');
+                        const notif = document.querySelector(`.acknowledge-btn[data-order-id="${orderId}"]`).closest('.notification');
+                        if (notif) notif.remove();
+
+                        const remaining = document.querySelectorAll('.acknowledge-btn').length;
+                        const countSpan = document.getElementById('new-orders-count');
+                        if (countSpan) {
+                            if (remaining === 0) {
+                                countSpan.innerText = '0 ta yangi';
+                            } else {
+                                countSpan.innerText = remaining + ' ta yangi';
+                            }
+                        }
+
+                        const orderRes = await fetch(`/order-details/${orderId}`);
+                        const order = await orderRes.json();
+                        let html = `<div class="bg-green-100 text-green-700 p-3 rounded mb-4">✅ Buyurtma qabul qilindi!</div>`;
+                        html += `<p><strong>Mijoz:</strong> ${order.firstName} ${order.lastName}</p>`;
+                        html += `<p><strong>Telefon:</strong> ${order.phone}</p>`;
+                        html += `<p><strong>Sana:</strong> ${new Date(order.createdAt).toLocaleString()}</p>`;
+                        html += `<p><strong>Holat:</strong> ${order.status}</p>`;
+                        html += `<p><strong>Qabul qildi:</strong> ${order.acceptedBy}</p>`;
+                        html += `<table class="w-full text-sm mt-2"><thead><tr><th>Mahsulot</th><th>Soni</th><th>Summa</th></tr></thead><tbody>`;
+                        order.items.forEach(item => {
+                            html += `<tr><td>${item.name}</td><td>${item.quantity} qop</td><td>$${item.price * item.quantity * item.itemsPerQop}</td></tr>`;
+                        });
+                        html += `</tbody></table>`;
+                        modalContent.innerHTML = html;
+                        modal.classList.remove('hidden');
+
+                        await updateBadge();
+                    } else {
+                        alert('Xatolik: ' + (data.error || ''));
+                    }
+                } catch (e) {
+                    alert('Server xatosi');
+                } finally {
+                    hideLoader();
+                }
+            });
+
+            // ================= PAGINATION =================
+            // 1. Oylik sotuvchilar (monthly summary)
+            let monthlyData = [];
+            let monthlyPage = 1;
+            let monthlyPageSize = 10;
+            let monthlyTotalPages = 1;
+
+            const monthlyTbody = document.getElementById('monthlySummaryBody');
+            const monthlyCurrentSpan = document.getElementById('monthly-current-page');
+            const monthlyTotalSpan = document.getElementById('monthly-total-pages');
+            const monthlyPrev = document.getElementById('monthly-prev');
+            const monthlyNext = document.getElementById('monthly-next');
+
+            function renderMonthlyTable() {
+                const start = (monthlyPage - 1) * monthlyPageSize;
+                const end = start + monthlyPageSize;
+                const pageData = monthlyData.slice(start, end);
+                monthlyTbody.innerHTML = '';
+                if (pageData.length === 0) {
+                    monthlyTbody.innerHTML = '<tr><td colspan="8" class="text-center py-4">Maʼlumot yoʻq</td></tr>';
+                } else {
+                    pageData.forEach((row, idx) => {
+                        const average = row.totalOrders > 0 ? (row.totalAmount / row.totalOrders).toFixed(2) : 0;
+                        monthlyTbody.innerHTML += `<tr>
+                            <td class="font-mono">${start + idx + 1}</td>
+                            <td class="font-medium">${row.salesperson}</td>
+                            <td>${row.year}</td>
+                            <td>${row.month}</td>
+                            <td class="text-center">${row.totalOrders}</td>
+                            <td class="text-center">${row.totalQops}</td>
+                            <td class="text-green-600 font-semibold">$${row.totalAmount.toLocaleString()}</td>
+                            <td class="text-blue-600">$${average}</td>
+                        </tr>`;
+                    });
+                }
+                monthlyCurrentSpan.innerText = monthlyPage;
+                monthlyTotalSpan.innerText = monthlyTotalPages;
+                monthlyPrev.disabled = monthlyPage <= 1;
+                monthlyNext.disabled = monthlyPage >= monthlyTotalPages;
+            }
+
+            monthlyPrev.addEventListener('click', () => {
+                if (monthlyPage > 1) {
+                    monthlyPage--;
+                    renderMonthlyTable();
+                }
+            });
+            monthlyNext.addEventListener('click', () => {
+                if (monthlyPage < monthlyTotalPages) {
+                    monthlyPage++;
+                    renderMonthlyTable();
+                }
+            });
+
+            (async () => {
+                try {
+                    const res = await fetch('/orders/monthly-summary?format=json');
+                    const data = await res.json();
+                    monthlyData = data;
+                    monthlyTotalPages = Math.ceil(monthlyData.length / monthlyPageSize) || 1;
+                    renderMonthlyTable();
+                } catch (e) {
+                    monthlyTbody.innerHTML = '<tr><td colspan="8" class="text-center py-4">Xatolik</td></tr>';
+                }
+            })();
+
+            // 2. Barcha buyurtmalar (orders)
+            const ordersDataElement = document.getElementById('orders-data');
+            const ordersData = JSON.parse(ordersDataElement.textContent || '[]');
+            const ordersTbody = document.getElementById('orders-table-body');
+            let ordersPage = 1;
+            let ordersPageSize = 10;
+            let ordersTotalPages = Math.ceil(ordersData.length / ordersPageSize) || 1;
+
+            const ordersCurrentSpan = document.getElementById('orders-current-page');
+            const ordersTotalSpan = document.getElementById('orders-total-pages');
+            const ordersPrev = document.getElementById('orders-prev');
+            const ordersNext = document.getElementById('orders-next');
+            const ordersPageSizeSelect = document.getElementById('orders-page-size');
+
+            function renderOrdersTable() {
+                const start = (ordersPage - 1) * ordersPageSize;
+                const end = start + ordersPageSize;
+                const pageData = ordersData.slice(start, end);
+                ordersTbody.innerHTML = '';
+                if (pageData.length === 0) {
+                    ordersTbody.innerHTML = '<tr><td colspan="12" class="text-center py-4">Maʼlumot yoʻq</td></tr>';
+                } else {
+                    pageData.forEach((order, idx) => {
+                        const rowNum = start + idx + 1;
+                        const productList = order.items.map(i => `${i.name} (${i.variant})`).join('; ');
+                        const variantList = order.items.map(i => i.variant || 'N/A').join('; ');
+                        const qtyList = order.items.map(i => i.quantity).join('; ');
+                        const perQopList = order.items.map(i => i.itemsPerQop).join('; ');
+                        const priceList = order.items.map(i => '$' + i.price).join('; ');
+                        const statusClass = order.status === 'Yangi' ? 'status-new' : 'status-accepted';
+                        ordersTbody.innerHTML += `<tr>
+                            <td class="font-mono">${rowNum}</td>
+                            <td>${new Date(order.createdAt).toLocaleString()}</td>
+                            <td class="font-medium">${order.firstName} ${order.lastName}</td>
+                            <td>${order.phone}</td>
+                            <td>${productList}</td>
+                            <td>${variantList}</td>
+                            <td>${qtyList}</td>
+                            <td>${perQopList}</td>
+                            <td>${priceList}</td>
+                            <td class="text-green-600 font-semibold">$${order.totalPrice}</td>
+                            <td><span class="status-badge ${statusClass}">${order.status}</span></td>
+                            <td>${order.acceptedBy || ''}</td>
+                        </tr>`;
+                    });
+                }
+                ordersCurrentSpan.innerText = ordersPage;
+                ordersTotalSpan.innerText = ordersTotalPages;
+                ordersPrev.disabled = ordersPage <= 1;
+                ordersNext.disabled = ordersPage >= ordersTotalPages;
+            }
+
+            ordersPrev.addEventListener('click', () => {
+                if (ordersPage > 1) {
+                    ordersPage--;
+                    renderOrdersTable();
+                }
+            });
+            ordersNext.addEventListener('click', () => {
+                if (ordersPage < ordersTotalPages) {
+                    ordersPage++;
+                    renderOrdersTable();
+                }
+            });
+            ordersPageSizeSelect.addEventListener('change', (e) => {
+                ordersPageSize = parseInt(e.target.value, 10);
+                ordersTotalPages = Math.ceil(ordersData.length / ordersPageSize) || 1;
+                ordersPage = 1;
+                renderOrdersTable();
+            });
+
+            renderOrdersTable();
+
+            // Sotuvchi filter (export)
+            document.getElementById('exportByPersonBtn').addEventListener('click', () => {
+                const person = document.getElementById('salespersonFilter').value;
+                window.location.href = '/orders/export-by-person' + (person ? '?person=' + encodeURIComponent(person) : '');
+            });
+
+            // Dastlabki badge yuklash
+            updateBadge();
+
+            // ================= Yangi buyurtmalarni tekshirish =================
+            const refreshBanner = document.getElementById('refresh-banner');
+            const refreshBtn = document.getElementById('refresh-btn');
+            let initialOrdersCount = {{orders.length}};
+
+            refreshBtn.addEventListener('click', () => {
+                window.location.reload();
+            });
+
+            setInterval(async () => {
+                try {
+                    const res = await fetch('/api/new-orders-count');
+                    const data = await res.json();
+                    if (data.count > initialOrdersCount) {
+                        refreshBanner.classList.remove('hidden');
+                    }
+                } catch (e) {}
+            }, 10000);
+        })();
+    </script>
+</body>
+</html>

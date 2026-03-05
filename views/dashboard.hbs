@@ -2,109 +2,575 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>{{title}}</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Mobile optimizatsiya */
+        @media (max-width: 640px) {
+            body {
+                padding-bottom: 70px;
+            }
+            .card-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .stat-card {
+                padding: 0.75rem;
+            }
+            .stat-card p:first-child {
+                font-size: 0.7rem;
+            }
+            .stat-card p:last-child {
+                font-size: 1rem;
+            }
+        }
+        /* Modal */
+        .modal-overlay {
+            transition: opacity 0.3s ease;
+        }
+        .modal-content {
+            transition: transform 0.3s ease;
+            transform: scale(0.95);
+        }
+        .modal-open .modal-content {
+            transform: scale(1);
+        }
+    </style>
 </head>
 <body class="bg-gray-50 font-sans antialiased">
 
-    <!-- Navbar -->
-    <header class="border-b border-gray-200 bg-white/70 backdrop-blur-sm sticky top-0 z-10">
+    <!-- ===== DESKTOP NAVBAR (yuqori) ===== -->
+    <header class="border-b border-gray-200 bg-white/70 backdrop-blur-sm sticky top-0 z-10 hidden md:block">
         <div class="max-w-7xl mx-auto px-5 py-4 flex items-center justify-between">
             <a href="/" class="text-2xl font-light tracking-wide">minimal.</a>
             <div class="flex items-center gap-4">
-                <span class="text-sm text-gray-600">{{user.username}}</span>
-                <a href="/" class="text-sm bg-gray-200 px-3 py-1 rounded-full hover:bg-gray-300 transition">Marketpleys</a>
+                <span class="text-sm text-gray-600">{{user.username}}(Xurshidbek)</span>
                 <a href="/logout" class="text-sm bg-gray-200 px-3 py-1 rounded-full hover:bg-gray-300 transition">Chiqish</a>
+                <a href="/cart" class="relative text-xl">
+                    🛒
+                    <span id="cart-badge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
+                </a>
             </div>
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-5 py-10">
-        <h1 class="text-3xl font-light mb-8">Dashboard</h1>
-
-        <!-- Summa kartochkalari -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-            <div class="bg-white rounded-2xl shadow-sm p-6 border-l-4 border-green-500">
-                <p class="text-sm text-gray-500 uppercase">Kirim</p>
-                <p class="text-3xl font-light text-green-600">+ {{totalIncome}} so‘m</p>
-            </div>
-            <div class="bg-white rounded-2xl shadow-sm p-6 border-l-4 border-red-500">
-                <p class="text-sm text-gray-500 uppercase">Chiqim</p>
-                <p class="text-3xl font-light text-red-600">- {{totalExpense}} so‘m</p>
-            </div>
-            <div class="bg-white rounded-2xl shadow-sm p-6 border-l-4 border-blue-500">
-                <p class="text-sm text-gray-500 uppercase">Balans</p>
-                <p class="text-3xl font-light text-blue-600">{{balance}} so‘m</p>
-            </div>
+    <!-- ===== MOBIL PASTKI NAVBAR ===== -->
+    <nav class="fixed bottom-0 left-0 right-0 md:hidden bg-white/95 backdrop-blur-sm border-t border-gray-200 shadow-lg z-20 py-2 px-4">
+        <div class="flex justify-around items-center">
+            <a href="/" class="flex flex-col items-center text-gray-600 hover:text-gray-900">
+                <span class="text-xl">🏠</span>
+                <span class="text-xs">Bosh</span>
+            </a>
+            <a href="/dashboard" class="flex flex-col items-center text-gray-600 hover:text-gray-900">
+                <span class="text-xl">📊</span>
+                <span class="text-xs">Dashboard</span>
+            </a>
+            <a href="/cart" class="flex flex-col items-center text-gray-600 hover:text-gray-900 relative">
+                <span class="text-xl">🛒</span>
+                <span class="text-xs">Savat</span>
+                <span id="cart-badge-bottom" class="absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center hidden">0</span>
+            </a>
+            <a href="/logout" class="flex flex-col items-center text-gray-600 hover:text-gray-900">
+                <span class="text-xl">🚪</span>
+                <span class="text-xs">Chiqish</span>
+            </a>
         </div>
+    </nav>
 
-        <!-- Yangi tranzaksiya qo'shish formasi -->
-        <div class="bg-white rounded-2xl shadow-sm p-6 mb-10">
-            <h2 class="text-xl font-light mb-4">Yangi kirim/chiqim qo‘shish</h2>
-            <form action="/dashboard/add" method="POST" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <select name="type" required class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400">
-                    <option value="income">Kirim</option>
-                    <option value="expense">Chiqim</option>
-                </select>
-                <input type="text" name="description" placeholder="Tavsif (masalan: 'Krossovka sotildi')" required
-                       class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400">
-                <input type="number" name="amount" placeholder="Summa" required step="0.01" min="0"
-                       class="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400">
-                <button type="submit" class="bg-gray-900 text-white px-6 py-2 rounded-lg hover:bg-gray-700 transition">
-                    Qo‘shish
-                </button>
-            </form>
-        </div>
+    <main class="max-w-7xl mx-auto px-4 sm:px-5 py-6 sm:py-10">
+        <h1 class="text-2xl sm:text-3xl font-light mb-6 sm:mb-8">Ombor Dashboard</h1>
 
-        <!-- Tranzaksiyalar ro'yxati -->
-        <div class="bg-white rounded-2xl shadow-sm p-6">
-            <h2 class="text-xl font-light mb-4">Oxirgi harakatlar</h2>
-            {{#if transactions.length}}
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead>
-                            <tr class="border-b border-gray-200">
-                                <th class="pb-2 font-medium">Turi</th>
-                                <th class="pb-2 font-medium">Tavsif</th>
-                                <th class="pb-2 font-medium">Summa</th>
-                                <th class="pb-2 font-medium">Sana</th>
-                                <th class="pb-2 font-medium"></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {{#each transactions}}
-                            <tr class="border-b border-gray-100 hover:bg-gray-50">
-                                <td class="py-3">
-                                    {{#if (eq this.type "income")}}
-                                        <span class="text-green-600">Kirim</span>
-                                    {{else}}
-                                        <span class="text-red-600">Chiqim</span>
-                                    {{/if}}
-                                </td>
-                                <td class="py-3">{{this.description}}</td>
-                                <td class="py-3">{{this.amount}} so‘m</td>
-                                <td class="py-3">{{this.date}}</td>
-                                <td class="py-3">
-                                    <form action="/dashboard/delete/{{this.id}}" method="POST" onsubmit="return confirm('O‘chirilsinmi?')">
-                                        <button type="submit" class="text-red-500 hover:text-red-700 text-sm">O‘chirish</button>
-                                    </form>
-                                </td>
-                            </tr>
-                            {{/each}}
-                        </tbody>
-                    </table>
+        <!-- ===== FILTER PANELI ===== -->
+        <div class="bg-white rounded-xl sm:rounded-2xl shadow-sm p-4 sm:p-6 mb-6 sm:mb-10">
+            <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 items-start sm:items-center justify-between">
+                <h2 class="text-base sm:text-lg font-light">Universal filter</h2>
+                <div class="flex flex-wrap gap-2 sm:gap-4 w-full sm:w-auto">
+                    <select id="filterRow" class="border border-gray-300 rounded-lg px-3 py-2 text-sm flex-1 sm:flex-none">
+                        <option value="">Barcha qatorlar</option>
+                        {{#each rows}}
+                        <option value="{{this.id}}">{{this.name}}</option>
+                        {{/each}}
+                    </select>
+                    <select id="filterProduct" class="border border-gray-300 rounded-lg px-3 py-2 text-sm flex-1 sm:flex-none">
+                        <option value="">Barcha mahsulotlar</option>
+                        {{#each products}}
+                        <option value="{{this.id}}">{{this.name}}</option>
+                        {{/each}}
+                    </select>
+                    <select id="filterVariant" class="border border-gray-300 rounded-lg px-3 py-2 text-sm flex-1 sm:flex-none">
+                        <option value="">Barcha variantlar</option>
+                        {{#each variants}}
+                        <option value="{{this}}">{{this}}</option>
+                        {{/each}}
+                    </select>
+                    <input type="text" id="search" placeholder="Qidirish..." class="border border-gray-300 rounded-lg px-3 py-2 text-sm flex-1 sm:w-48">
+                    <button id="applyFilter" class="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-700 transition">Qo‘llash</button>
                 </div>
-            {{else}}
-                <p class="text-gray-500">Hozircha hech qanday harakat yo‘q.</p>
-            {{/if}}
+            </div>
+        </div>
+
+        <!-- Statistik kartochkalar -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-10 card-grid">
+            <div class="bg-white rounded-xl sm:rounded-2xl shadow-sm p-3 sm:p-6 border-l-4 border-blue-500 stat-card">
+                <p class="text-xs sm:text-sm text-gray-500 uppercase">Jami qop</p>
+                <p class="text-lg sm:text-3xl font-light text-blue-600">{{totalBags}}</p>
+            </div>
+            <div class="bg-white rounded-xl sm:rounded-2xl shadow-sm p-3 sm:p-6 border-l-4 border-green-500 stat-card">
+                <p class="text-xs sm:text-sm text-gray-500 uppercase">Qatorlar</p>
+                <p class="text-lg sm:text-3xl font-light text-green-600">{{totalRows}}</p>
+            </div>
+            <div class="bg-white rounded-xl sm:rounded-2xl shadow-sm p-3 sm:p-6 border-l-4 border-yellow-500 stat-card">
+                <p class="text-xs sm:text-sm text-gray-500 uppercase">Polkalar</p>
+                <p class="text-lg sm:text-3xl font-light text-yellow-600">{{totalShelves}}</p>
+            </div>
+            <div class="bg-white rounded-xl sm:rounded-2xl shadow-sm p-3 sm:p-6 border-l-4 border-purple-500 stat-card">
+                <p class="text-xs sm:text-sm text-gray-500 uppercase">Bandlik</p>
+                <p class="text-lg sm:text-3xl font-light text-purple-600">{{occupiedPercent}}%</p>
+            </div>
+        </div>
+
+        <!-- Chartlar -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-10">
+            <div class="bg-white rounded-xl sm:rounded-2xl shadow-sm p-4">
+                <canvas id="rowChart" width="400" height="200"></canvas>
+            </div>
+            <div class="bg-white rounded-xl sm:rounded-2xl shadow-sm p-4">
+                <canvas id="productChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+
+        <!-- Qatorlar va joylashuv jadvali (Mahsulot qo'shish tugmasi bilan) -->
+        <div class="bg-white rounded-xl sm:rounded-2xl shadow-sm overflow-hidden mb-6 sm:mb-10">
+            <div class="p-4 border-b border-gray-200 flex flex-wrap gap-2 justify-between items-center">
+                <h2 class="text-base sm:text-lg font-light">Ombor sxemasi</h2>
+                <div class="flex gap-2">
+                    <button id="addProductBtn" class="bg-green-600 text-white px-3 py-1 rounded-full text-sm hover:bg-green-700 transition">+ Mahsulot qo‘shish</button>
+                    <button id="addRowBtn" class="bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-sm hover:bg-gray-300 transition">+ Qator</button>
+                    <button id="addShelfBtn" class="bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-sm hover:bg-gray-300 transition">+ Polka</button>
+                    <button id="addLevelBtn" class="bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-sm hover:bg-gray-300 transition">+ Qavat</button>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs sm:text-sm">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="p-2 sm:p-3 text-left">Model</th>
+                            <th class="p-2 sm:p-3 text-left">Variant</th>
+                            <th class="p-2 sm:p-3 text-left">Dona/qop</th>
+                            <th class="p-2 sm:p-3 text-left">Soni (qop)</th>
+                            <th class="p-2 sm:p-3 text-left"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryTable">
+                        {{#each inventory}}
+                        <tr class="border-b hover:bg-gray-50" data-product-id="{{this.productId._id}}" data-variant="{{this.variant}}">
+                            <td class="p-2 sm:p-3">{{this.productId.name}}</td>
+                            <td class="p-2 sm:p-3">{{this.variant}}</td>
+                            <td class="p-2 sm:p-3">{{this.itemsPerQop}}</td>
+                            <td class="p-2 sm:p-3 font-medium">{{this.quantity}}</td>
+                            <td class="p-2 sm:p-3">
+                                <button class="text-blue-600 hover:text-blue-800 text-xs move-btn" data-id="{{this._id}}">Ko‘chirish</button>
+                                <button class="text-red-600 hover:text-red-800 text-xs remove-btn" data-id="{{this._id}}">Chiqarish</button>
+                            </td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Harakatlar jadvali (kirim/chiqim) -->
+        <div class="bg-white rounded-xl sm:rounded-2xl shadow-sm overflow-hidden">
+            <div class="p-4 border-b border-gray-200">
+                <h2 class="text-base sm:text-lg font-light">Oxirgi harakatlar</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs sm:text-sm">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="p-2 sm:p-3 text-left">Turi</th>
+                            <th class="p-2 sm:p-3 text-left">Mahsulot</th>
+                            <th class="p-2 sm:p-3 text-left">Variant</th>
+                            <th class="p-2 sm:p-3 text-left">Miqdor</th>
+                            <th class="p-2 sm:p-3 text-left">Qayerdan</th>
+                            <th class="p-2 sm:p-3 text-left">Qayerga</th>
+                            <th class="p-2 sm:p-3 text-left">Sana</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each movements}}
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="p-2 sm:p-3">
+                                <span class="inline-block px-2 py-1 rounded-full text-xs {{#if (eq this.type 'income')}}bg-green-100 text-green-800{{else}}bg-red-100 text-red-800{{/if}}">
+                                    {{#if (eq this.type 'income')}}Kirim{{else}}Chiqim{{/if}}
+                                </span>
+                            </td>
+                            <td class="p-2 sm:p-3">{{this.productName}}</td>
+                            <td class="p-2 sm:p-3">{{this.variant}}</td>
+                            <td class="p-2 sm:p-3 font-medium">{{this.quantity}} qop</td>
+                            <td class="p-2 sm:p-3">{{this.fromLocation}}</td>
+                            <td class="p-2 sm:p-3">{{this.toLocation}}</td>
+                            <td class="p-2 sm:p-3">{{this.date}}</td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </main>
 
-    <footer class="border-t border-gray-200 py-8 text-center text-gray-400 text-sm">
+    <!-- ===== MODAL: Kirim Qo‘shish (7 maydon, model nomi qo‘lda) ===== -->
+    <div id="addProductModal" class="fixed inset-0 flex items-center justify-center z-50 hidden modal-overlay px-4" style="background-color: rgba(0,0,0,0.5);">
+        <div class="w-full max-w-lg bg-white shadow-xl rounded-2xl p-6 modal-content">
+            <h2 class="text-2xl font-bold text-center text-green-600 mb-6">
+                Kirim Qo‘shish
+            </h2>
+            <form action="/inventory/add" method="POST" class="space-y-4">
+                <!-- 1. Model nomi (matn, qo‘lda yoziladi) -->
+                <input type="text" name="modelName" required placeholder="Model nomi"
+                    class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 focus:outline-none">
+
+                <!-- 2. Variant raqami -->
+                <input type="text" name="variant" required placeholder="Variant raqami"
+                    class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 focus:outline-none">
+
+                <!-- 3. Qatorda joylashuvi (matn) -->
+                <input type="text" name="rowName" required placeholder="Qatorda joylashuvi (masalan: A)"
+                    class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 focus:outline-none">
+
+                <!-- 4. Polka raqami (matn) -->
+                <input type="text" name="shelf" required placeholder="Polka raqami (masalan: 1 yoki B)"
+                    class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 focus:outline-none">
+
+                <!-- 5. Qavat raqami (matn) -->
+                <input type="text" name="level" required placeholder="Qavat raqami (masalan: 1 yoki Yuqori)"
+                    class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 focus:outline-none">
+
+                <!-- 6. Nechta qop (raqam) -->
+                <input type="number" name="quantity" min="1" required placeholder="Nechta qop"
+                    class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 focus:outline-none">
+
+                <!-- 7. Qop ichidagi ish soni (raqam) -->
+                <input type="number" name="itemsPerQop" min="1" required placeholder="Qop ichidagi ish soni"
+                    class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 focus:outline-none">
+
+                <!-- Tugmalar -->
+                <div class="flex gap-3 pt-2">
+                    <button type="button" class="close-modal w-full bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 rounded-lg font-semibold transition">
+                        Bekor qilish
+                    </button>
+                    <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-semibold transition">
+                        Qabul qilish
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===== MODAL: Yangi qator qo‘shish ===== -->
+    <div id="addRowModal" class="fixed inset-0 flex items-center justify-center z-50 hidden modal-overlay px-4" style="background-color: rgba(0,0,0,0.5);">
+        <div class="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 w-full max-w-md modal-content">
+            <h2 class="text-lg sm:text-xl font-light mb-4">Yangi qator qo‘shish</h2>
+            <form action="/dashboard/add-row" method="POST">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Qator nomi</label>
+                    <input type="text" name="rowName" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Polkalar soni</label>
+                    <input type="number" name="shelves" value="20" min="1" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Qavatlar soni (har bir polkada)</label>
+                    <input type="number" name="levels" value="2" min="1" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="button" class="close-modal bg-gray-200 text-gray-800 px-4 py-2 rounded-full text-sm hover:bg-gray-300 transition">Bekor qilish</button>
+                    <button type="submit" class="bg-gray-900 text-white px-4 py-2 rounded-full text-sm hover:bg-gray-700 transition">Qo‘shish</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Yangi polka qo‘shish -->
+    <div id="addShelfModal" class="fixed inset-0 flex items-center justify-center z-50 hidden modal-overlay px-4" style="background-color: rgba(0,0,0,0.5);">
+        <div class="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 w-full max-w-md modal-content">
+            <h2 class="text-lg sm:text-xl font-light mb-4">Yangi polka qo‘shish</h2>
+            <form action="/dashboard/add-shelf" method="POST">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Qatorni tanlang</label>
+                    <select name="rowId" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                        {{#each rows}}
+                        <option value="{{this.id}}">{{this.name}}</option>
+                        {{/each}}
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Polka raqami</label>
+                    <input type="number" name="shelfNumber" min="1" max="100" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="button" class="close-modal bg-gray-200 text-gray-800 px-4 py-2 rounded-full text-sm hover:bg-gray-300 transition">Bekor qilish</button>
+                    <button type="submit" class="bg-gray-900 text-white px-4 py-2 rounded-full text-sm hover:bg-gray-700 transition">Qo‘shish</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Yangi qavat qo‘shish -->
+    <div id="addLevelModal" class="fixed inset-0 flex items-center justify-center z-50 hidden modal-overlay px-4" style="background-color: rgba(0,0,0,0.5);">
+        <div class="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 w-full max-w-md modal-content">
+            <h2 class="text-lg sm:text-xl font-light mb-4">Yangi qavat qo‘shish</h2>
+            <form action="/dashboard/add-level" method="POST">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Qatorni tanlang</label>
+                    <select name="rowId" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                        {{#each rows}}
+                        <option value="{{this.id}}">{{this.name}}</option>
+                        {{/each}}
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Polka raqami</label>
+                    <input type="number" name="shelfNumber" min="1" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Qavat raqami</label>
+                    <input type="number" name="levelNumber" min="1" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="button" class="close-modal bg-gray-200 text-gray-800 px-4 py-2 rounded-full text-sm hover:bg-gray-300 transition">Bekor qilish</button>
+                    <button type="submit" class="bg-gray-900 text-white px-4 py-2 rounded-full text-sm hover:bg-gray-700 transition">Qo‘shish</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Mahsulotni ko‘chirish -->
+    <div id="moveModal" class="fixed inset-0 flex items-center justify-center z-50 hidden modal-overlay px-4" style="background-color: rgba(0,0,0,0.5);">
+        <div class="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 w-full max-w-md modal-content">
+            <h2 class="text-lg sm:text-xl font-light mb-4">Mahsulotni ko‘chirish</h2>
+            <form id="moveForm" method="POST">
+                <input type="hidden" name="inventoryId" id="moveInventoryId">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Yangi qator</label>
+                    <select name="newRowId" id="newRowId" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                        {{#each rows}}
+                        <option value="{{this.id}}">{{this.name}}</option>
+                        {{/each}}
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Yangi polka</label>
+                    <input type="number" name="newShelf" id="newShelf" min="1" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Yangi qavat</label>
+                    <input type="number" name="newLevel" id="newLevel" min="1" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Miqdor</label>
+                    <input type="number" name="quantity" id="moveQuantity" min="1" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="button" class="close-modal bg-gray-200 text-gray-800 px-4 py-2 rounded-full text-sm hover:bg-gray-300 transition">Bekor qilish</button>
+                    <button type="submit" class="bg-gray-900 text-white px-4 py-2 rounded-full text-sm hover:bg-gray-700 transition">Ko‘chirish</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Mahsulot chiqarish -->
+    <div id="removeModal" class="fixed inset-0 flex items-center justify-center z-50 hidden modal-overlay px-4" style="background-color: rgba(0,0,0,0.5);">
+        <div class="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 w-full max-w-md modal-content">
+            <h2 class="text-lg sm:text-xl font-light mb-4">Mahsulotni chiqarish</h2>
+            <form id="removeForm" method="POST">
+                <input type="hidden" name="inventoryId" id="removeInventoryId">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Chiqariladigan miqdor</label>
+                    <input type="number" name="quantity" id="removeQuantity" min="1" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="button" class="close-modal bg-gray-200 text-gray-800 px-4 py-2 rounded-full text-sm hover:bg-gray-300 transition">Bekor qilish</button>
+                    <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded-full text-sm hover:bg-red-700 transition">Chiqarish</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer class="border-t border-gray-200 py-4 sm:py-8 text-center text-gray-400 text-xs sm:text-sm">
         <div class="max-w-7xl mx-auto px-5">
             © 2025 minimal. Barcha huquqlar himoyalangan.
         </div>
     </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Badge yangilash (savat)
+            const cartBadge = document.getElementById('cart-badge');
+            const cartBadgeBottom = document.getElementById('cart-badge-bottom');
+            function updateBadge() {
+                fetch('/cart-data')
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.totalItems > 0) {
+                            if (cartBadge) { cartBadge.textContent = data.totalItems; cartBadge.classList.remove('hidden'); }
+                            if (cartBadgeBottom) { cartBadgeBottom.textContent = data.totalItems; cartBadgeBottom.classList.remove('hidden'); }
+                        } else {
+                            if (cartBadge) cartBadge.classList.add('hidden');
+                            if (cartBadgeBottom) cartBadgeBottom.classList.add('hidden');
+                        }
+                    });
+            }
+            updateBadge();
+
+            // Modal ochish va yopish
+            const modals = document.querySelectorAll('.modal-overlay');
+            const openModalButtons = {
+                addProductBtn: 'addProductModal',
+                addRowBtn: 'addRowModal',
+                addShelfBtn: 'addShelfModal',
+                addLevelBtn: 'addLevelModal'
+            };
+            Object.keys(openModalButtons).forEach(btnId => {
+                const btn = document.getElementById(btnId);
+                if (btn) {
+                    btn.addEventListener('click', () => {
+                        document.getElementById(openModalButtons[btnId]).classList.remove('hidden');
+                    });
+                }
+            });
+
+            document.querySelectorAll('.close-modal').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    this.closest('.modal-overlay').classList.add('hidden');
+                });
+            });
+
+            window.addEventListener('click', (e) => {
+                modals.forEach(modal => {
+                    if (e.target === modal) {
+                        modal.classList.add('hidden');
+                    }
+                });
+            });
+
+            // Move va Remove modal
+            const moveBtns = document.querySelectorAll('.move-btn');
+            const removeBtns = document.querySelectorAll('.remove-btn');
+            const moveModal = document.getElementById('moveModal');
+            const removeModal = document.getElementById('removeModal');
+            const moveInventoryId = document.getElementById('moveInventoryId');
+            const removeInventoryId = document.getElementById('removeInventoryId');
+
+            moveBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.dataset.id;
+                    moveInventoryId.value = id;
+                    moveModal.classList.remove('hidden');
+                });
+            });
+
+            removeBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.dataset.id;
+                    removeInventoryId.value = id;
+                    removeModal.classList.remove('hidden');
+                });
+            });
+
+            // ========== FILTER FUNKSIYASI (yangi kolonka indekslari bilan) ==========
+            const filterRow = document.getElementById('filterRow');
+            const filterProduct = document.getElementById('filterProduct');
+            const filterVariant = document.getElementById('filterVariant');
+            const searchInput = document.getElementById('search');
+            const applyFilterBtn = document.getElementById('applyFilter');
+
+            applyFilterBtn.addEventListener('click', function() {
+                const selectedRowId = filterRow.value;
+                const selectedProductId = filterProduct.value;
+                const selectedVariant = filterVariant.value;
+                const searchText = searchInput.value.toLowerCase().trim();
+
+                const rows = document.querySelectorAll('#inventoryTable tr');
+                rows.forEach(row => {
+                    let show = true;
+
+                    // Qator bo'yicha filter – biz endi qator ustunini olib tashlaganmiz, 
+                    // shuning uchun bu filter faqat agar kerak bo'lsa ishlatiladi.
+                    // Hozircha uni saqlaymiz, lekin row.dataset.rowId mavjud emas, shuning uchun o'chirish kerak.
+                    // Agar siz hali ham qator bo'yicha filter kerak bo'lsa, uni qayta ishlang.
+                    // Hozircha uni olib tashlaymiz.
+                    // if (selectedRowId) {
+                    //     const rowId = row.dataset.rowId;
+                    //     if (rowId !== selectedRowId) show = false;
+                    // }
+
+                    // Mahsulot bo'yicha filter
+                    if (show && selectedProductId) {
+                        const productId = row.dataset.productId;
+                        if (productId !== selectedProductId) show = false;
+                    }
+
+                    // Variant bo'yicha filter
+                    if (show && selectedVariant) {
+                        const variant = row.dataset.variant;
+                        if (variant !== selectedVariant) show = false;
+                    }
+
+                    // Qidiruv matni bo'yicha (mahsulot nomi, variant)
+                    if (show && searchText) {
+                        const productName = row.querySelector('td:nth-child(1)').innerText.toLowerCase();
+                        const variant = row.querySelector('td:nth-child(2)').innerText.toLowerCase();
+                        if (!productName.includes(searchText) && !variant.includes(searchText)) {
+                            show = false;
+                        }
+                    }
+
+                    row.style.display = show ? '' : 'none';
+                });
+            });
+
+            // Chartlar
+            const ctx1 = document.getElementById('rowChart').getContext('2d');
+            new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: [{{#each rows}}'{{this.name}}',{{/each}}],
+                    datasets: [{
+                        label: 'Qoplar soni',
+                        data: [{{#each rows}}{{this.totalBags}},{{/each}}],
+                        backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                        borderColor: 'rgb(59, 130, 246)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+
+            const ctx2 = document.getElementById('productChart').getContext('2d');
+            new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: [{{#each products}}'{{this.name}}',{{/each}}],
+                    datasets: [{
+                        data: [{{#each products}}{{this.totalBags}},{{/each}}],
+                        backgroundColor: [
+                            '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        });
+    </script>
 </body>
 </html>
